@@ -1,0 +1,11 @@
+Pros:
+  State mutation (kind of)
+  Single file components
+
+Cons:
+  Poor TS support
+  Even worse CSS support
+  Complex library management
+  Lack of user autocomplete (importing components)
+  Need to explicitly declare types twice in order for them to be available on the <template>
+  Hard to troubleshoot, having 3 different ways to do things (options, class, composition) makes it very hard to search for errors

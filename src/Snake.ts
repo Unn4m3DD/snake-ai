@@ -36,12 +36,14 @@ export class Snake {
     this.apple = { x: width / 2, y: height / 2 };
   }
 
-
+  static getEmptyBoard(width: number, height: number) {
+    return new Array(height)
+      .fill(0)
+      .map(() => new Array(width).fill(Cell.Empty))
+  }
 
   render(): Cell[][] {
-    const board = new Array(this.height)
-      .fill(0)
-      .map(() => new Array(this.width).fill(Cell.Empty));
+    const board = Snake.getEmptyBoard(this.width, this.height);
     for (const item of this.snake) {
       board[item.y][item.x] = Cell.Snake;
     }
@@ -91,11 +93,14 @@ export class SnakeAI {
   bestStep(): Direction {
     return "w"
   }
+  static getEmptyBoard(width: number, height: number) {
+    return new Array(height)
+      .fill(0)
+      .map(() => new Array(width).fill({ x: 0, y: 0 }).map(e => ({ ...e })));
+  }
   render(): Point[][] {
     if (this.availableDirections) return this.availableDirections
-    const result = new Array(this.game.height)
-      .fill(0)
-      .map(() => new Array(this.game.width).fill({ x: 0, y: 0 }).map(e => ({ ...e })));
+    const result = SnakeAI.getEmptyBoard(this.game.width, this.game.height);
 
     for (let y = 0; y < this.game.height; y++) {
       for (let x = 0; x < this.game.width; x++) {
@@ -115,7 +120,6 @@ export class SnakeAI {
         if (y === this.game.height - 1 && result[y][x].y === 1) result[y][x].y = 0
       }
     }
-    console.table(result)
     this.availableDirections = result
     return result
   }

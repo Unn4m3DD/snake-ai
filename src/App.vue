@@ -1,54 +1,98 @@
 <template>
-  <div class="app">
-    <table class="board" border="1">
-      <tr v-for="(item, y) in board" class="row" :key="y">
-        <td
-          v-for="(cell, x) in item"
-          class="cell"
-          :key="x"
-          :class="{ snake: cell === Cell.Snake, apple: cell === Cell.Apple }"
-        >
-          <div class="arrow" :class="{
-            a: availableSteps[y][x].x < 0,
-            d: availableSteps[y][x].x > 0,
-          }">
-            <font-awesome-icon icon="arrow-circle-up" />
-          </div>
-          <div class="arrow" :class="{
-            w: availableSteps[y][x].y < 0,
-            s: availableSteps[y][x].y > 0,
-          }">
-            <font-awesome-icon icon="arrow-circle-up" />
-          </div>
-        </td>
-      </tr>
-    </table>
-    <div v-if="lost">Lost!</div>
-  </div>
+  <q-layout view="hHh LpR fFf">
+    <q-drawer
+      show-if-above
+      v-model="leftDrawerOpen"
+      side="left"
+      behavior="desktop"
+      :overlay="true"
+      elevated
+      :width="400"
+    >
+      <AIOptions />
+    </q-drawer>
+
+    <q-page-container class="game-container">
+      <table class="board" border="1">
+        <tr v-for="(item, y) in board" class="row" :key="y">
+          <td
+            v-for="(cell, x) in item"
+            class="cell"
+            :key="x"
+            :class="{ snake: cell === Cell.Snake, apple: cell === Cell.Apple }"
+          >
+            <div
+              class="arrow"
+              :class="{
+                a: availableSteps[y][x].x < 0,
+                d: availableSteps[y][x].x > 0,
+              }"
+            >
+              <font-awesome-icon icon="arrow-circle-up" />
+            </div>
+            <div
+              class="arrow"
+              :class="{
+                w: availableSteps[y][x].y < 0,
+                s: availableSteps[y][x].y > 0,
+              }"
+            >
+              <font-awesome-icon icon="arrow-circle-up" />
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div v-if="lost">Game lost!</div>
+      <q-btn
+        v-if="!running"
+        @click="startGame"
+        color="primary"
+        label="Start Game"
+      />
+      <q-separator />
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script lang="ts">
 import { defineComponent, Ref, ref } from "vue";
 import { Snake, Cell, Direction, SnakeAI, Point } from "./Snake";
+import AIOptions from "./components/AIOptions.vue";
 export default defineComponent({
   name: "App",
-  components: {},
+  components: { AIOptions },
   setup() {
-    let gameLoop: ReturnType<typeof setInterval>;
+    const settings = ref({
+      height: 10,
+      width: 10,
+    });
+    const leftDrawerOpen = ref(true);
+    const running = ref(false);
+
+    let gameLoop: ReturnType<typeof setInterval> | undefined;
     const lost = ref(false);
     let dir = "d" as Direction;
-    const game = new Snake(10, 10);
+    const board: Ref<Cell[][]> = ref(
+      Snake.getEmptyBoard(settings.value.width, settings.value.height)
+    );
+    const availableSteps: Ref<Point[][]> = ref(
+      SnakeAI.getEmptyBoard(settings.value.width, settings.value.height)
+    );
 
-    const board: Ref<Cell[][]> = ref(game.render());
-    const snakeAI = new SnakeAI(game);
-    const availableSteps: Ref<Point[][]> = ref(snakeAI.render());
-
-    gameLoop = setInterval(() => {
-      lost.value = game.step(dir);
-      if (!lost.value) board.value = game.render();
-      else clearInterval(gameLoop);
-    }, 500);
-
+    const startGame = () => {
+      running.value = true;
+      const game = new Snake(settings.value.width, settings.value.height);
+      const snakeAI = new SnakeAI(game);
+      availableSteps.value = snakeAI.render();
+      gameLoop = setInterval(() => {
+        lost.value = game.step(dir);
+        if (!lost.value) board.value = game.render();
+        else {
+          clearInterval(gameLoop);
+          running.value = false;
+        }
+      }, 500);
+    };
     window.addEventListener("keydown", function (e) {
       if (["w", "a", "s", "d"].includes(e.key)) {
         if (
@@ -65,7 +109,13 @@ export default defineComponent({
       board,
       Cell,
       lost,
-      availableSteps
+      availableSteps,
+      leftDrawerOpen,
+      toggleLeftDrawer() {
+        leftDrawerOpen.value = !leftDrawerOpen.value;
+      },
+      running,
+      startGame,
     };
   },
 });
@@ -73,9 +123,6 @@ export default defineComponent({
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
@@ -119,5 +166,11 @@ export default defineComponent({
   &.d {
     transform: translate(-50%, -50%) rotate(90deg);
   }
+}
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>
