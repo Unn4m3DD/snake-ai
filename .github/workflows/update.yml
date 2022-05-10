@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: update on service provider
-        run: curl https://unn4m3dd.xyz/update?repo=snake-ai
+        run: curl https://home.unn4m3dd.xyz/update?repo=snake-ai
