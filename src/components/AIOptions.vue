@@ -15,13 +15,13 @@
       <div class="column">
         <label class="self-start"> How long should the game step be? </label>
         <q-slider
-          v-model="slider"
+          v-model="gameSettings.stepDelay"
           :min="0"
-          :max="2000"
+          :max="1000"
           :step="10"
           label-always
           switch-label-side
-          :label-value="slider + 'ms'"
+          :label-value="gameSettings.stepDelay + 'ms'"
         />
       </div>
       <q-separator class="q-ma-md q-mt-xl" />
@@ -31,69 +31,74 @@
         </label>
         <label class="self-start q-mt-sm">Width:</label>
         <q-slider
-          v-model="slider"
-          :min="0"
-          :max="40"
-          :step="1"
+          v-model="gameSettings.width"
+          :min="2"
+          :max="30"
+          :step="2"
           label-always
           switch-label-side
         />
         <label class="self-start q-mt-xl">Height:</label>
         <q-slider
-          v-model="slider"
-          :min="0"
-          :max="40"
-          :step="1"
+          v-model="gameSettings.height"
+          :min="2"
+          :max="16"
+          :step="2"
           label-always
           switch-label-side
         />
       </div>
-      <q-separator class="q-ma-md q-mt-xl"/>
+      <q-separator class="q-ma-md q-mt-xl" />
     </q-tab-panel>
     <q-tab-panel name="ai" class="test-left">
       <div class="column">
         <label class="self-start">Who will playing?</label>
-        <q-radio v-model="mode.player" val="player" label="Let me play!" />
-        <q-radio v-model="mode.player" val="ai" label="Let the AI play!" />
+        <q-radio v-model="AISettings.player" val="player" label="Let me play!" />
+        <q-radio v-model="AISettings.player" val="ai" label="Let the AI play!" />
       </div>
       <q-separator class="q-ma-md" />
       <div class="column" :class="{ disabled: !selectionEnabled.cicle }">
         <label class="self-start">
           What kind of hamiltonian cicle will the AI use?
         </label>
-        <q-radio v-model="mode.cicle" val="full" label="Full" />
-        <q-radio v-model="mode.cicle" val="improved" label="Improved" />
+        <q-radio v-model="AISettings.cicle" val="full" label="Full" />
+        <q-radio v-model="AISettings.cicle" val="improved" label="Improved" />
       </div>
       <q-separator class="q-ma-md" />
       <div class="column" :class="{ disabled: !selectionEnabled.heuristic }">
         <label class="self-start">What heuristic will the AI use?</label>
         <q-radio
-          v-model="mode.heuristic"
+          v-model="AISettings.heuristic"
+          val="random"
+          label="Random Choice"
+        />
+        <q-radio
+          v-model="AISettings.heuristic"
           val="euclidian"
           label="Euclidian Distance"
         />
         <q-radio
-          v-model="mode.heuristic"
+          v-model="AISettings.heuristic"
           val="bfs"
           label="BFS (Breadth First Search)"
         />
-        <q-radio v-model="mode.heuristic" val="a-star" label="A* (A Star)" />
+        <q-radio v-model="AISettings.heuristic" val="a-star" label="A* (A Star)" />
       </div>
       <q-separator class="q-ma-md" />
     </q-tab-panel>
     <q-tab-panel name="status">
       <div class="column items-start">
         <q-checkbox
-          v-model="status.showCicles"
+          v-model="statusSettings.showCicles"
           label="Show Hamiltonian Cicles"
         />
         <q-checkbox
-          v-model="status.showAverageDecisionTime"
+          v-model="statusSettings.showAverageDecisionTime"
           label="Show Average Decision Time"
         />
-        <q-checkbox v-model="status.showStepCount" label="Show Step Count" />
+        <q-checkbox v-model="statusSettings.showStepCount" label="Show Step Count" />
         <q-checkbox
-          v-model="status.showHeadAverageDistanceFromApple"
+          v-model="statusSettings.showHeadAverageDistanceFromApple"
           label="Show Head Average Distance From Apple"
         />
       </div>
@@ -104,40 +109,28 @@
 
 <script>
 import { ref, computed } from "@vue/reactivity";
-import { onUpdated } from "@vue/runtime-core";
+import { gameSettings, statusSettings, AISettings } from "../truth.ts";
+
 export default {
   name: "AIOptions",
   setup() {
-    const mode = ref({
-      player: "player",
-      cicle: "full",
-      heuristic: "euclidian",
-    });
-    const status = ref({
-      showCicles: true,
-      showAverageDecisionTime: true,
-      showStepCount: true,
-      showHeadAverageDistanceFromApple: true,
-    });
     const selectionEnabled = computed(() => ({
-      cicle: mode.value.player !== "player",
-      heuristic: mode.value.player !== "player" && mode.value.cicle !== "full",
+      cicle: AISettings.player !== "player",
+      heuristic: AISettings.player !== "player" && AISettings.cicle !== "full",
     }));
     const tab = ref("game");
     const slider = ref(500);
-    onUpdated(() => {
-      console.log(mode);
-    });
     function preventDisabledClick(e) {
       if (e.target.disabled) e.preventDefault();
     }
     return {
-      mode,
       slider,
       tab,
       selectionEnabled,
       preventDisabledClick,
-      status,
+      gameSettings,
+      statusSettings,
+      AISettings
     };
   },
 };

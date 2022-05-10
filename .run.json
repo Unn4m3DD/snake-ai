@@ -1,0 +1,7 @@
+{
+  "setup": "npm ci && npm run build",
+  "run": "&& serve -s dist -l $PORT",
+  "title": "Snake AI",
+  "subtitle": "Snake Artificial Intelligence",
+  "video": "https://raw.githubusercontent.com/Unn4m3DD/snake-ai/master/demo.mp4"
+}
